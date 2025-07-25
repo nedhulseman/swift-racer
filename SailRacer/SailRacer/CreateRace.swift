@@ -6,18 +6,24 @@ struct CreateRace: View {
     struct Marker: Identifiable {
         let id = UUID()
         let type: String
+        let name: String
         let order: Int
         let coordinate: CLLocationCoordinate2D
     }
     @State private var course = [
-        Marker(type: "start", order: 1, coordinate: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)),
-
+        Marker(type: "start", name:"Placeholder", order: 1, coordinate: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)),
     ]
+    @State private var selectedOption = "Start (Race Committee)"
+    let options = ["Start (Race Committee)", "Start (Pin End)", "Distance"]
     @Environment(\.editMode) private var editMode
     @State private var longitude: String = ""
     @State private var latitude: String = ""
+    @State private var markerName: String = ""
+
     @FocusState private var longitudeFocused: Bool
     @FocusState private var latitudeFocused: Bool
+    @FocusState private var markerNameFocused: Bool
+
     @State private var showCoordinatesFields: Bool = false
 
 
@@ -26,14 +32,28 @@ struct CreateRace: View {
             VStack(spacing:0) {
                 // Map as header
                 if showCoordinatesFields {
-                    HStack{
-                        TextField("Latitude", text: $latitude)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .focused($longitudeFocused)
-                        TextField("Longitude", text: $longitude)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .focused($latitudeFocused)
-                    }.padding()
+                    VStack {
+                        HStack{
+                            TextField("Latitude", text: $latitude)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .focused($longitudeFocused)
+                            TextField("Longitude", text: $longitude)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .focused($latitudeFocused)
+                        }.padding()
+                    }
+                        HStack {
+                            TextField("Marker Name", text: $markerName)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .focused($markerNameFocused)
+
+                        }.padding()
+                    Picker("Choose an option", selection: $selectedOption) {
+                        ForEach(options, id: \.self) { option in
+                            Text(option)
+                        }
+                    }
+                    .pickerStyle(.inline) // or .segmented
                     
                     Button("Add Marker") {
                         addMarker()
@@ -42,7 +62,7 @@ struct CreateRace: View {
                 Map(coordinateRegion: $locationManager.region, showsUserLocation: true, annotationItems: course) { marker in
                     MapAnnotation(coordinate: marker.coordinate) {
                         VStack {
-                            Image(systemName: "mappin.circle.fill")
+                            Image(systemName: "mappin")
                                 .foregroundColor(.red)
                                 .font(.title)
                             Text(marker.type)
@@ -58,8 +78,8 @@ struct CreateRace: View {
                 .listRowInsets(EdgeInsets())
                 
                 List {
-                    ForEach(course) { item in
-                        Text("Marker Type: \(item.type)\tMarker Order:\(item.order)")
+                    ForEach(Array(course.enumerated()), id: \.element.id) { index, item in
+                        Text("\tMarker Type: \(item.type)")
                     }
                     .onMove(perform: move)
                 }
@@ -78,7 +98,6 @@ struct CreateRace: View {
                     } label: {
                         Label("Add a marker", systemImage: "plus")
                     }
-
                     EditButton()
                 }
             }
@@ -93,7 +112,7 @@ struct CreateRace: View {
         if let lat = Double(latitude),
            let lon = Double(longitude) {
             
-            let newMarker = Marker(type: "race", order: 5, coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon))
+            let newMarker = Marker(type: "race", name:markerName, order: 5, coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon))
             
             course.append(newMarker)
             showCoordinatesFields.toggle()
