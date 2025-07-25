@@ -8,14 +8,37 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State var selectTab = 0
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+          
+            TabView(selection: $selectTab){
+                Home()
+                    .tag(0)
+                    .tabItem {
+                        Image(systemName: "house")
+                        Text("Home")
+                    }
+                JoinRace()
+                    .tag(1)
+                    .tabItem {
+                        Image(systemName: "figure.sailing.circle")
+                        Text("Join Race")
+                    }
+                CreateRace()
+                    .tag(2)
+                    .tabItem {
+                        Image(systemName: "plus.circle.fill")
+                        Text("Create Race")
+                    }
+                MyRaces()
+                    .tag(3)
+                    .tabItem {
+                        Image(systemName: "chart.bar.yaxis")
+                        Text("My Races")
+                    }
+            }
         }
-        .padding()
     }
 }
 
