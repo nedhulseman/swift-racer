@@ -400,6 +400,9 @@
 				DEVELOPMENT_TEAM = X37GQ9URU7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Location is required to use almost all functions of SailRacer";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "To use SailRacer you will need to enable location services";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -428,6 +431,9 @@
 				DEVELOPMENT_TEAM = X37GQ9URU7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Location is required to use almost all functions of SailRacer";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "To use SailRacer you will need to enable location services";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

@@ -7,22 +7,34 @@ struct CreateRace: View {
         let id = UUID()
         let type: String
         let name: String
-        let order: Int
+        var order: Int
         let coordinate: CLLocationCoordinate2D
+        var color: Color
     }
-    @State private var course = [
-        Marker(type: "start", name:"Placeholder", order: 1, coordinate: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)),
-    ]
+    let colors: [Color] = [.yellow, .blue, .teal, .orange, .red]
+    @State private var course:[Marker] = []
+    /*
+     fake race course
+     38.824398, -77.034441 - Start RC
+     38.824331, -77.032295 - Start Pin
+     38.818981, -77.033368 - Windward
+     38.829911, -77.035158 - Leward
+     
+     */
+    
+    
     @State private var selectedOption = "Start (Race Committee)"
     let options = ["Start (Race Committee)", "Start (Pin End)", "Distance"]
     @Environment(\.editMode) private var editMode
     @State private var longitude: String = ""
     @State private var latitude: String = ""
     @State private var markerName: String = ""
+    @State private var startIsFinish: Bool = false
 
     @FocusState private var longitudeFocused: Bool
     @FocusState private var latitudeFocused: Bool
     @FocusState private var markerNameFocused: Bool
+    @FocusState private var startIsFinishFocused: Bool
 
     @State private var showCoordinatesFields: Bool = false
 
@@ -40,32 +52,36 @@ struct CreateRace: View {
                             TextField("Longitude", text: $longitude)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .focused($latitudeFocused)
-                        }.padding()
-                    }
+                        }.padding(.horizontal)
                         HStack {
                             TextField("Marker Name", text: $markerName)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .focused($markerNameFocused)
-
-                        }.padding()
-                    Picker("Choose an option", selection: $selectedOption) {
-                        ForEach(options, id: \.self) { option in
-                            Text(option)
+                            
                         }
-                    }
-                    .pickerStyle(.inline) // or .segmented
-                    
-                    Button("Add Marker") {
-                        addMarker()
+                        .padding()
+                        Picker("Choose an option", selection: $selectedOption) {
+                            ForEach(options, id: \.self) { option in
+                                Text(option)
+                            }
+                        }
+                        .pickerStyle(.inline) // or .segmented
+
+                        Button("Add Marker") {
+                            addMarker()
+                        }
+                        .frame(maxWidth: .infinity)
+                        .buttonStyle(.borderedProminent)
+                        .padding()
                     }
                 }
                 Map(coordinateRegion: $locationManager.region, showsUserLocation: true, annotationItems: course) { marker in
                     MapAnnotation(coordinate: marker.coordinate) {
                         VStack {
                             Image(systemName: "mappin")
-                                .foregroundColor(.red)
+                                .foregroundColor(marker.color)
                                 .font(.title)
-                            Text(marker.type)
+                            Text(marker.name)
                                 .font(.caption)
                                 .padding(4)
                                 .background(Color.white.opacity(0.8))
@@ -76,11 +92,18 @@ struct CreateRace: View {
                 .frame(height: 250)
                 .cornerRadius(10)
                 .listRowInsets(EdgeInsets())
-                
+                Toggle("Use Start Line as Finish?", isOn: $startIsFinish)
+                    .focused($startIsFinishFocused)
+                    .padding()
                 List {
                     ForEach(Array(course.enumerated()), id: \.element.id) { index, item in
-                        Text("\tMarker Type: \(item.type)")
+                        HStack {
+                            Image(systemName: "mappin")
+                                .foregroundColor(item.color)
+                            Text("\tMarker Type: \(item.type)")
+                        }
                     }
+                    .onDelete(perform: delete)
                     .onMove(perform: move)
                 }
                 .listStyle(.plain)
@@ -106,20 +129,74 @@ struct CreateRace: View {
 
     func move(from source: IndexSet, to destination: Int) {
         course.move(fromOffsets: source, toOffset: destination)
+        updateMarkerAttributes()
+    }
+    func delete(at offsets: IndexSet) {
+        course.remove(atOffsets: offsets)
     }
 
     func addMarker() {
         if let lat = Double(latitude),
            let lon = Double(longitude) {
             
-            let newMarker = Marker(type: "race", name:markerName, order: 5, coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon))
+            let newMarker = Marker(type: selectedOption, name:markerName, order: 5, coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon), color:colors[course.count])
             
             course.append(newMarker)
+            let coordinates = course.map { $0.coordinate }
+            let newRegion = regionForCoordinates(coordinates)
+            locationManager.region = newRegion
+
             showCoordinatesFields.toggle()
         } else {
             print("Invalid input: Please enter valid numbers.")
         }
     }
+    func updateMarkerAttributes() {
+        for (index, var Marker) in course.enumerated() {
+            // Modify the properties of the structItem (which is a copy)
+            Marker.order = index + 1
+            Marker.color = colors[index]
+
+            //Marker.type = Marker.type
+            //Marker.name = Marker.name
+            //Marker.coordinate = Marker.coordinate
+            //Marker.id = Marker.id
+            
+            // Assign the modified copy back to the original array at its index
+            course[index] = Marker
+        }
+    }
+    func regionForCoordinates(_ coordinates: [CLLocationCoordinate2D]) -> MKCoordinateRegion {
+        guard !coordinates.isEmpty else {
+            // Default fallback region
+            return locationManager.region
+        }
+
+        var minLat = coordinates.first!.latitude
+        var maxLat = coordinates.first!.latitude
+        var minLon = coordinates.first!.longitude
+        var maxLon = coordinates.first!.longitude
+
+        for coord in coordinates {
+            minLat = min(minLat, coord.latitude)
+            maxLat = max(maxLat, coord.latitude)
+            minLon = min(minLon, coord.longitude)
+            maxLon = max(maxLon, coord.longitude)
+        }
+
+        let center = CLLocationCoordinate2D(
+            latitude: (minLat + maxLat) / 2,
+            longitude: (minLon + maxLon) / 2
+        )
+
+        let span = MKCoordinateSpan(
+            latitudeDelta: (maxLat - minLat) * 1.5,  // Add padding
+            longitudeDelta: (maxLon - minLon) * 1.5
+        )
+
+        return MKCoordinateRegion(center: center, span: span)
+    }
+    
 
 }
 
