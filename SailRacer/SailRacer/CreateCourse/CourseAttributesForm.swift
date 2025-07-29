@@ -15,6 +15,7 @@ struct CourseAttributesForm: View {
     @State private var startIsFinish: Bool = false
     @FocusState private var useStartAsFinishLineFocused: Bool
     @FocusState private var nameFocused: Bool
+    @FocusState private var cityFocused: Bool
     @FocusState private var startIsFinishFocused: Bool
     @FocusState private var startDateFocused: Bool
     enum Status: String {
@@ -24,28 +25,35 @@ struct CourseAttributesForm: View {
     
     var body: some View {
         Form {
-            HStack{
-                TextField("Name of Race", text: $course.name)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .focused($nameFocused)
+            Section(header: Text("Name of Race")) {
                 
-            }.padding(.horizontal)
-            Picker("Select a State", selection: $selectedState) {
-                ForEach(states, id: \.self) { state in
-                    Text(state)
-                }
+                HStack{
+                    TextField("Name of Race", text: $course.name)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .focused($nameFocused)
+                    
+                }.padding(.horizontal)
             }
-            .pickerStyle(.menu) // dropdown-style
-            .padding()
-            TextField("City", text: $course.race_city)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .focused($nameFocused)
-            DatePicker("Select a date", selection: $course.start_date, displayedComponents: .date)
-                .datePickerStyle(.compact) // .wheel, .graphical, or .compact
+            Section(header: Text("Location and Time of Start")) {
+                Picker("Select a State", selection: $selectedState) {
+                    ForEach(states, id: \.self) { state in
+                        Text(state)
+                    }
+                }
+                .pickerStyle(.menu) // dropdown-style
                 .padding()
-            Toggle("Use start line as finish line?", isOn: $course.useStartAsFinishLine)
-                .focused($startIsFinishFocused)
-                .padding()
+                TextField("City", text: $course.race_city)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .focused($cityFocused)
+                DatePicker("Select a date", selection: $course.start_date, displayedComponents: .date)
+                    .datePickerStyle(.compact) // .wheel, .graphical, or .compact
+                    .padding()
+            }
+            Section(header: Text("Other Race Details")) {
+                Toggle("Use start line as finish line?", isOn: $course.useStartAsFinishLine)
+                    .focused($startIsFinishFocused)
+                    .padding()
+            }
             HStack {
                 Button("Save as Draft") {
                     saveRace(status:Status.draft)

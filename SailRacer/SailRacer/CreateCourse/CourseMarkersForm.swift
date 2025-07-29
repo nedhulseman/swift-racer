@@ -9,73 +9,18 @@ import SwiftUI
 import CoreLocation
 import MapKit
 
+
 struct CourseMarkersForm: View {
     @StateObject private var locationManager = LocationManagerCustom()
     @Binding var course: Course
     
-    /*
-     fake race course
-     38.824398, -77.034441 - Start RC
-     38.824331, -77.032295 - Start Pin
-     38.818981, -77.033368 - Windward
-     38.829911, -77.035158 - Leward
-     
-     */
+    @State private var showAddMarkerSheet = false
     
-    
-    @State private var selectedOption = "Start (Race Committee)"
-    let options = ["Start (Race Committee)", "Start (Pin End)", "Distance"]
     @Environment(\.editMode) private var editMode
-    @State private var longitude: String = ""
-    @State private var latitude: String = ""
-    @State private var markerName: String = ""
 
-    @FocusState private var longitudeFocused: Bool
-    @FocusState private var latitudeFocused: Bool
-    @FocusState private var markerNameFocused: Bool
-
-    @State private var showCoordinatesFields: Bool = false
     var body: some View {
         NavigationView {
-            VStack(spacing:0) {
-                // Map as header
-                if showCoordinatesFields {
-                    Form {
-                        VStack {
-                            Button("Get Current Location") {
-                                getCurrentLocation()
-                            }
-                            HStack{
-                                TextField("Latitude", text: $latitude)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    .focused($longitudeFocused)
-                                TextField("Longitude", text: $longitude)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    .focused($latitudeFocused)
-                            }.padding(.horizontal)
-                        }
-                        HStack {
-                            TextField("Marker Name", text: $markerName)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .focused($markerNameFocused)
-                            
-                        }
-                        .padding()
-                        Picker("Choose Marker Type", selection: $selectedOption) {
-                            ForEach(options, id: \.self) { option in
-                                Text(option)
-                            }
-                        }
-                        .pickerStyle(.menu) // or .segmented
-
-                        Button("Add Marker") {
-                            addMarker()
-                        }
-                        .frame(maxWidth: .infinity)
-                        .buttonStyle(.borderedProminent)
-                        .padding()
-                    }
-                }
+            VStack {
                 Map(coordinateRegion: $locationManager.region, showsUserLocation: true, annotationItems: course.markers) { marker in
                     MapAnnotation(coordinate: marker.coordinate) {
                         VStack {
@@ -92,84 +37,78 @@ struct CourseMarkersForm: View {
                 }
                 .frame(height: 250)
                 .cornerRadius(10)
-                .listRowInsets(EdgeInsets())
+                .shadow(radius: 4)
+                .padding()
 
                 List {
-                    ForEach(Array(course.markers.enumerated()), id: \.element.id) { index, item in
-                        HStack {
-                            Image(systemName: "mappin")
-                                .foregroundColor(item.color)
-                            Text("\tMarker Type: \(item.type)")
+                    if course.markers.isEmpty {
+                        Text("No markers yet. Tap '+' to add one.")
+                            .foregroundColor(.gray)
+                            .padding()
+                    } else {
+                        Section(header: Text("Course Markers")) {
+                            ForEach(Array(course.markers.enumerated()), id: \.element.id) { index, item in
+                                HStack {
+                                    Image(systemName: "mappin")
+                                        .foregroundColor(item.color)
+                                    VStack(alignment: .leading) {
+                                        Text(item.name.isEmpty ? "Unnamed Marker" : item.name)
+                                            .fontWeight(.semibold)
+                                        Text("Type: \(item.type)")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                            }
+                            .onDelete(perform: delete)
+                            .onMove(perform: move)
                         }
                     }
-                    .onDelete(perform: delete)
-                    .onMove(perform: move)
                 }
-                .listStyle(.plain)
+                .listStyle(.insetGrouped)
             }
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     Button(action: {
-                        showCoordinatesFields.toggle()
+                        showAddMarkerSheet = true
                     }) {
-                        Label("Add a marker", systemImage: "plus")
+                        Label("Add Marker", systemImage: "plus")
                     }
                     EditButton()
                 }
             }
+            .sheet(isPresented: $showAddMarkerSheet) {
+                AddMarkerFormView(locationManager: locationManager) { newMarker in
+                    course.markers.append(newMarker)
+                    updateMarkerAttributes()
+                    locationManager.region = regionForCoordinates(course.markers.map(\.coordinate))
+                    showAddMarkerSheet = false
+                }
+            }
+
         }
     }
-    func getCurrentLocation()  {
-        if let coordinate = locationManager.location {
-                latitude = String(coordinate.latitude)
-                longitude = String(coordinate.longitude)
-        } else {
-            print("Locating...")
-        }
-    }
+
     func move(from source: IndexSet, to destination: Int) {
         course.markers.move(fromOffsets: source, toOffset: destination)
         updateMarkerAttributes()
     }
+
     func delete(at offsets: IndexSet) {
         course.markers.remove(atOffsets: offsets)
+        updateMarkerAttributes()
     }
 
-    func addMarker() {
-        if let lat = Double(latitude),
-           let lon = Double(longitude) {
-            
-            let newMarker = Marker(type: selectedOption, name:markerName, order: 5, coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon), color:colors[course.markers.count])
-            
-
-            course.markers.append(newMarker)
-            let coordinates = course.markers.map { $0.coordinate }
-            let newRegion = regionForCoordinates(coordinates)
-            locationManager.region = newRegion
-
-            showCoordinatesFields.toggle()
-        } else {
-            print("Invalid input: Please enter valid numbers.")
-        }
-    }
     func updateMarkerAttributes() {
-        for (index, var Marker) in course.markers.enumerated() {
-            // Modify the properties of the structItem (which is a copy)
-            Marker.order = index + 1
-            Marker.color = colors[index]
-
-            //Marker.type = Marker.type
-            //Marker.name = Marker.name
-            //Marker.coordinate = Marker.coordinate
-            //Marker.id = Marker.id
-            
-            // Assign the modified copy back to the original array at its index
-            course.markers[index] = Marker
+        for (index, var marker) in course.markers.enumerated() {
+            marker.order = index + 1
+            marker.color = colors[index % colors.count]
+            course.markers[index] = marker
         }
     }
+
     func regionForCoordinates(_ coordinates: [CLLocationCoordinate2D]) -> MKCoordinateRegion {
         guard !coordinates.isEmpty else {
-            // Default fallback region
             return locationManager.region
         }
 
@@ -191,13 +130,89 @@ struct CourseMarkersForm: View {
         )
 
         let span = MKCoordinateSpan(
-            latitudeDelta: (maxLat - minLat) * 1.5,  // Add padding
-            longitudeDelta: (maxLon - minLon) * 1.5
+            latitudeDelta: max((maxLat - minLat) * 1.5, 0.005),
+            longitudeDelta: max((maxLon - minLon) * 1.5, 0.005)
         )
 
         return MKCoordinateRegion(center: center, span: span)
     }
 }
+
+struct AddMarkerFormView: View {
+    @Environment(\.dismiss) var dismiss
+    @ObservedObject var locationManager: LocationManagerCustom
+
+    @State private var latitude: String = ""
+    @State private var longitude: String = ""
+    @State private var markerName: String = ""
+    @State private var selectedOption = "Start (Race Committee)"
+    let options = ["Start (Race Committee)", "Start (Pin End)", "Distance"]
+
+    let onAdd: (Marker) -> Void
+
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text("Marker Details")) {
+                    TextField("Marker Name", text: $markerName)
+                    
+                    Picker("Marker Type", selection: $selectedOption) {
+                        ForEach(options, id: \.self) { Text($0) }
+                    }
+                }
+                Section(header: Text("Location Details")) {
+                    TextField("Latitude", text: $latitude)
+                        .keyboardType(.decimalPad)
+
+                    TextField("Longitude", text: $longitude)
+                        .keyboardType(.decimalPad)
+                    Button("Fill Using Current Location") {
+                        getCurrentLocation()
+                    }
+                }
+
+                Section {
+                    Button("Add Marker") {
+                        addMarker()
+                    }
+                    .disabled(!canAddMarker)
+                }
+            }
+            .navigationTitle("New Marker")
+            .navigationBarItems(trailing: Button("Cancel") {
+                dismiss()
+            })
+        }
+    }
+
+    var canAddMarker: Bool {
+        Double(latitude) != nil && Double(longitude) != nil
+    }
+
+    func addMarker() {
+        guard let lat = Double(latitude),
+              let lon = Double(longitude) else { return }
+
+        let marker = Marker(
+            type: selectedOption,
+            name: markerName,
+            order: 0, // will be updated outside
+            coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon),
+            color: .blue // temporary; updated by parent
+        )
+
+        onAdd(marker)
+    }
+    func getCurrentLocation() {
+        if let coordinate = locationManager.location {
+            latitude = String(coordinate.latitude)
+            longitude = String(coordinate.longitude)
+        } else {
+            print("Locating...")
+        }
+    }
+}
+
 
 #Preview {
     CourseMarkersForm(course: .constant(Course()))
