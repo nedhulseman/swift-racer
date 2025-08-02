@@ -10,12 +10,12 @@ import SwiftUI
 struct CourseAttributesForm: View {
     @Binding var course: Course
     
+    
     @State private var selectedState = "California"
     let states = ["Alabama", "Alaska", "Arizona", "California", "Colorado", "Maryland", "New York", "Texas", "Virginia"]
     @State private var startIsFinish: Bool = false
     @FocusState private var useStartAsFinishLineFocused: Bool
     @FocusState private var nameFocused: Bool
-    @FocusState private var cityFocused: Bool
     @FocusState private var startIsFinishFocused: Bool
     @FocusState private var startDateFocused: Bool
     enum Status: String {
@@ -34,17 +34,7 @@ struct CourseAttributesForm: View {
                     
                 }.padding(.horizontal)
             }
-            Section(header: Text("Location and Time of Start")) {
-                Picker("Select a State", selection: $selectedState) {
-                    ForEach(states, id: \.self) { state in
-                        Text(state)
-                    }
-                }
-                .pickerStyle(.menu) // dropdown-style
-                .padding()
-                TextField("City", text: $course.race_city)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .focused($cityFocused)
+            Section(header: Text("Date of Start")) {
                 DatePicker("Select a date", selection: $course.start_date, displayedComponents: .date)
                     .datePickerStyle(.compact) // .wheel, .graphical, or .compact
                     .padding()
@@ -54,26 +44,7 @@ struct CourseAttributesForm: View {
                     .focused($startIsFinishFocused)
                     .padding()
             }
-            HStack {
-                Button("Save as Draft") {
-                    saveRace(status:Status.draft)
-                }
-                    .frame(maxWidth: .infinity)
-                    .buttonStyle(.borderedProminent)
-                    .padding()
-                Button("Publish Race") {
-                    saveRace(status:Status.final)
-                }
-                    .frame(maxWidth: .infinity)
-                    .buttonStyle(.borderedProminent)
-                    .padding()
-            }
-
         }
-    }
-    func saveRace(status: Status) {
-        print("Saving as \(status)")
-        print(course)
     }
 }
 

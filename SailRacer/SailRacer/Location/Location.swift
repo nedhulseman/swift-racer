@@ -2,6 +2,13 @@ import Foundation
 import CoreLocation
 import MapKit
 
+extension MKMapItem: Identifiable {
+    public var id: String {
+        // Use a unique identifier; you could use name + coordinates as a fallback
+        return placemark.name ?? UUID().uuidString
+    }
+}
+
 class LocationManagerCustom: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
 

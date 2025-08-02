@@ -13,6 +13,8 @@ import MapKit
 struct CourseMarkersForm: View {
     @StateObject private var locationManager = LocationManagerCustom()
     @Binding var course: Course
+    @State private var editingMarker: Marker? = nil
+
     
     @State private var showAddMarkerSheet = false
     
@@ -59,9 +61,23 @@ struct CourseMarkersForm: View {
                                             .foregroundColor(.secondary)
                                     }
                                 }
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    // Delete action
+                                    Button(role: .destructive) {
+                                        delete(at: IndexSet(integer: index))
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+
+                                    // Edit action
+                                    Button {
+                                        edit(at: IndexSet(integer: index))
+                                    } label: {
+                                        Label("Edit", systemImage: "pencil")
+                                    }
+                                    .tint(.blue)
+                                }
                             }
-                            .onDelete(perform: delete)
-                            .onMove(perform: move)
                         }
                     }
                 }
@@ -78,10 +94,21 @@ struct CourseMarkersForm: View {
                 }
             }
             .sheet(isPresented: $showAddMarkerSheet) {
-                AddMarkerFormView(locationManager: locationManager) { newMarker in
-                    course.markers.append(newMarker)
+                AddMarkerFormView(
+                    locationManager: locationManager,
+                    existingMarker: editingMarker
+                ) { updatedMarker in
+                    if let original = editingMarker,
+                       let index = course.markers.firstIndex(where: { $0.id == original.id }) {
+                        // Editing
+                        course.markers[index] = updatedMarker
+                    } else {
+                        // Adding new
+                        course.markers.append(updatedMarker)
+                    }
                     updateMarkerAttributes()
                     locationManager.region = regionForCoordinates(course.markers.map(\.coordinate))
+                    editingMarker = nil
                     showAddMarkerSheet = false
                 }
             }
@@ -92,6 +119,12 @@ struct CourseMarkersForm: View {
     func move(from source: IndexSet, to destination: Int) {
         course.markers.move(fromOffsets: source, toOffset: destination)
         updateMarkerAttributes()
+    }
+    func edit(at offsets: IndexSet) {
+        if let index = offsets.first {
+            editingMarker = course.markers[index]
+            showAddMarkerSheet = true
+        }
     }
 
     func delete(at offsets: IndexSet) {
@@ -142,67 +175,79 @@ struct AddMarkerFormView: View {
     @Environment(\.dismiss) var dismiss
     @ObservedObject var locationManager: LocationManagerCustom
 
+    var existingMarker: Marker?
+    let onSave: (Marker) -> Void
+
     @State private var latitude: String = ""
     @State private var longitude: String = ""
     @State private var markerName: String = ""
-    @State private var selectedOption = "Start (Race Committee)"
-    let options = ["Start (Race Committee)", "Start (Pin End)", "Distance"]
+    @State private var selectedOption: String = "Start (Race Committee)"
 
-    let onAdd: (Marker) -> Void
+    let options = ["Start (Race Committee)", "Start (Pin End)", "Distance"]
 
     var body: some View {
         NavigationView {
             Form {
                 Section(header: Text("Marker Details")) {
                     TextField("Marker Name", text: $markerName)
-                    
                     Picker("Marker Type", selection: $selectedOption) {
                         ForEach(options, id: \.self) { Text($0) }
                     }
                 }
+
                 Section(header: Text("Location Details")) {
                     TextField("Latitude", text: $latitude)
                         .keyboardType(.decimalPad)
-
                     TextField("Longitude", text: $longitude)
                         .keyboardType(.decimalPad)
+
                     Button("Fill Using Current Location") {
                         getCurrentLocation()
                     }
                 }
 
                 Section {
-                    Button("Add Marker") {
-                        addMarker()
+                    Button(existingMarker == nil ? "Add Marker" : "Save Changes") {
+                        saveMarker()
                     }
-                    .disabled(!canAddMarker)
+                    .disabled(!canSaveMarker)
                 }
             }
-            .navigationTitle("New Marker")
+            .navigationTitle(existingMarker == nil ? "New Marker" : "Edit Marker")
             .navigationBarItems(trailing: Button("Cancel") {
                 dismiss()
             })
+            .onAppear {
+                if let marker = existingMarker {
+                    markerName = marker.name
+                    selectedOption = marker.type
+                    latitude = String(marker.coordinate.latitude)
+                    longitude = String(marker.coordinate.longitude)
+                }
+            }
         }
     }
 
-    var canAddMarker: Bool {
+    var canSaveMarker: Bool {
         Double(latitude) != nil && Double(longitude) != nil
     }
 
-    func addMarker() {
+    func saveMarker() {
         guard let lat = Double(latitude),
               let lon = Double(longitude) else { return }
 
         let marker = Marker(
+            id: existingMarker?.id ?? UUID(),
             type: selectedOption,
             name: markerName,
             order: 0, // will be updated outside
             coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon),
-            color: .blue // temporary; updated by parent
+            color: existingMarker?.color ?? .blue
         )
 
-        onAdd(marker)
+        onSave(marker)
     }
+
     func getCurrentLocation() {
         if let coordinate = locationManager.location {
             latitude = String(coordinate.latitude)
@@ -212,6 +257,7 @@ struct AddMarkerFormView: View {
         }
     }
 }
+
 
 
 #Preview {
