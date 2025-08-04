@@ -19,13 +19,13 @@ struct ContentView: View {
                         Image(systemName: "house")
                         Text("Home")
                     }
-                JoinRace()
+                FindRace()
                     .tag(1)
                     .tabItem {
                         Image(systemName: "figure.sailing.circle")
                         Text("Join Race")
                     }
-                CreateRace()
+                CreateCourseLanding()
                     .tag(2)
                     .tabItem {
                         Image(systemName: "plus.circle.fill")

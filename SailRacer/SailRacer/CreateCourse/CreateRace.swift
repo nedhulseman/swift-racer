@@ -2,6 +2,8 @@ import SwiftUI
 import MapKit
 
 struct CreateRace: View {
+    @Environment(\.dismiss) var dismiss
+    var onSave: (Course) -> Void
     @State private var course_ = Course()
     @State var selectTab = 0
     @State private var step = 1
@@ -47,7 +49,6 @@ struct CreateRace: View {
             default:
                 EmptyView()
             }
-
             Spacer()
 
             // Navigation buttons
@@ -73,12 +74,10 @@ struct CreateRace: View {
         .padding()
     }
     func submitCourse(_ course: Course) {
-        // Final validation / submission logic
-        print("Course submitted: \(course)")
+        print(course)
+        onSave(course)
+        dismiss()
     }
 }
 
 
-#Preview {
-    CreateRace()
-}

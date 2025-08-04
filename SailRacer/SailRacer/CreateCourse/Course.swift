@@ -33,9 +33,10 @@ struct RaceLocation: Equatable {
     var latitude: Double
 }
 
-struct Course: Equatable {
+struct Course: Equatable, Identifiable {
     let id = UUID()
     var name: String = ""
+    var race_committee_pin: String = String(format: "%04d", Int.random(in: 0...9999))
     //var race_city: String = ""
     //var race_state: String = ""
     var race_location: RaceLocation?
@@ -43,4 +44,6 @@ struct Course: Equatable {
     //private var code: String //perhaps to implement later
     var useStartAsFinishLine: Bool = false
     var markers: [Marker] = []
+    var race_type: RaceType = default_race_type
+    var boat_classes: [SailboatClass] = []
 }
