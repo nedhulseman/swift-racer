@@ -107,7 +107,7 @@ struct CourseMarkersForm: View {
                         course.markers.append(updatedMarker)
                     }
                     updateMarkerAttributes()
-                    locationManager.region = regionForCoordinates(course.markers.map(\.coordinate))
+                    locationManager.region = regionForCoordinates(course.markers.map(\.coordinate), locationManager: locationManager)
                     editingMarker = nil
                     showAddMarkerSheet = false
                 }
@@ -135,40 +135,12 @@ struct CourseMarkersForm: View {
     func updateMarkerAttributes() {
         for (index, var marker) in course.markers.enumerated() {
             marker.order = index + 1
-            marker.color = colors[index % colors.count]
+            marker.colorName = colors[index % colors.count]
             course.markers[index] = marker
         }
     }
 
-    func regionForCoordinates(_ coordinates: [CLLocationCoordinate2D]) -> MKCoordinateRegion {
-        guard !coordinates.isEmpty else {
-            return locationManager.region
-        }
 
-        var minLat = coordinates.first!.latitude
-        var maxLat = coordinates.first!.latitude
-        var minLon = coordinates.first!.longitude
-        var maxLon = coordinates.first!.longitude
-
-        for coord in coordinates {
-            minLat = min(minLat, coord.latitude)
-            maxLat = max(maxLat, coord.latitude)
-            minLon = min(minLon, coord.longitude)
-            maxLon = max(maxLon, coord.longitude)
-        }
-
-        let center = CLLocationCoordinate2D(
-            latitude: (minLat + maxLat) / 2,
-            longitude: (minLon + maxLon) / 2
-        )
-
-        let span = MKCoordinateSpan(
-            latitudeDelta: max((maxLat - minLat) * 1.5, 0.005),
-            longitudeDelta: max((maxLon - minLon) * 1.5, 0.005)
-        )
-
-        return MKCoordinateRegion(center: center, span: span)
-    }
 }
 
 struct AddMarkerFormView: View {
@@ -237,7 +209,6 @@ struct AddMarkerFormView: View {
               let lon = Double(longitude) else { return }
 
         let marker = Marker(
-            id: existingMarker?.id ?? UUID(),
             type: selectedOption,
             name: markerName,
             order: 0, // will be updated outside

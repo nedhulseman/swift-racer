@@ -9,6 +9,8 @@ import CoreLocation
 
 let courses_for_dev = [
     Course(
+        start_countdown:  180,
+        racing: false,
         name: "SCOW WNR",
         race_committee_pin: "1782",
         race_location: RaceLocation(
@@ -23,7 +25,6 @@ let courses_for_dev = [
         useStartAsFinishLine: true,
         markers: [
             Marker(
-                id: UUID(uuidString: "C7CFB8DA-EFFD-4C9E-A42D-0CC62F18DC78")!,
                 type: "Start (Race Committee)",
                 name: "Start RC",
                 order: 1,
@@ -31,7 +32,6 @@ let courses_for_dev = [
                 color: .yellow
             ),
             Marker(
-                id: UUID(uuidString: "59ABD2A4-4B48-4990-82DC-F33992D63021")!,
                 type: "Start (Pin End)",
                 name: "Start PE",
                 order: 2,
@@ -39,7 +39,6 @@ let courses_for_dev = [
                 color: .blue
             ),
             Marker(
-                id: UUID(uuidString: "E314477B-4D38-4661-8568-8CBB4774B883")!,
                 type: "Distance",
                 name: "Windard",
                 order: 3,
@@ -47,7 +46,6 @@ let courses_for_dev = [
                 color: .teal
             ),
             Marker(
-                id: UUID(uuidString: "02798C79-E701-43CB-A850-E5FEC4A9494A")!,
                 type: "Distance",
                 name: "Leeward",
                 order: 4,
@@ -55,7 +53,7 @@ let courses_for_dev = [
                 color: .orange
             )
         ],
-        race_type: .oneDesign,
+        race_type: RaceType.oneDesign,
         boat_classes: [
             SailboatClass(
                 name: "Albacore",

@@ -18,6 +18,8 @@ struct CourseAttributesForm: View {
     @FocusState private var nameFocused: Bool
     @FocusState private var startIsFinishFocused: Bool
     @FocusState private var startDateFocused: Bool
+    @State private var selectedMinute: Int = 3
+
     enum Status: String {
         case draft
         case final
@@ -49,13 +51,22 @@ struct CourseAttributesForm: View {
                     .padding()
             }
             Section(header: Text("Other Race Details")) {
+                Text("Start sequence: \(selectedMinute) minutes")
+                    .padding()
+
+                Picker("Start Sequence: ", selection: $selectedMinute) {
+                    ForEach(0..<60) { minute in
+                        Text("\(minute) min").tag(minute)
+                    }
+                }
+                .pickerStyle(.wheel) // Use wheel style
+                .frame(height: 150)
                 Toggle("Use start line as finish line?", isOn: $course.useStartAsFinishLine)
                     .focused($startIsFinishFocused)
                     .padding()
             }
             Section(header: Text("Race Committee PIN")) {
                 ZStack {
-                    // Hidden but layout-visible TextField
                     TextField("", text: $course.race_committee_pin)
                         .keyboardType(.numberPad)
                         .focused($isFocused)

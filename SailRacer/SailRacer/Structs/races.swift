@@ -5,7 +5,7 @@
 //  Created by Ned hulseman on 8/3/25.
 //
 
-enum RaceType: String, CaseIterable, Identifiable {
+enum RaceType: String, CaseIterable, Identifiable, Hashable {
     case oneDesign = "One-Design"
     case phrf = "PHRF"
 
@@ -13,3 +13,8 @@ enum RaceType: String, CaseIterable, Identifiable {
 }
 
 let default_race_type = RaceType.oneDesign
+
+enum JoinType {
+    case racer
+    case raceCommittee
+}

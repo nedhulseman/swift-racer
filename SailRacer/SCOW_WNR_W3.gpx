@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Xcode">
+  <trk>
+    <name>Test Route</name>
+    <trkseg>
+      <trkpt lat="38.827314" lon="-77.0308"></trkpt>
+      <trkpt lat="38.8265" lon="-77.0313"></trkpt>
+      <trkpt lat="38.8255" lon="-77.0295"></trkpt>
+    </trkseg>
+  </trk>
+</gpx>

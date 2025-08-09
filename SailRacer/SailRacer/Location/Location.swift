@@ -38,3 +38,40 @@ class LocationManagerCustom: NSObject, ObservableObject, CLLocationManagerDelega
         }
     }
 }
+
+extension CLLocationCoordinate2D: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(latitude)
+        hasher.combine(longitude)
+    }
+}
+
+func regionForCoordinates(_ coordinates: [CLLocationCoordinate2D], locationManager: LocationManagerCustom) -> MKCoordinateRegion {
+    guard !coordinates.isEmpty else {
+        return locationManager.region
+    }
+
+    var minLat = coordinates.first!.latitude
+    var maxLat = coordinates.first!.latitude
+    var minLon = coordinates.first!.longitude
+    var maxLon = coordinates.first!.longitude
+
+    for coord in coordinates {
+        minLat = min(minLat, coord.latitude)
+        maxLat = max(maxLat, coord.latitude)
+        minLon = min(minLon, coord.longitude)
+        maxLon = max(maxLon, coord.longitude)
+    }
+
+    let center = CLLocationCoordinate2D(
+        latitude: (minLat + maxLat) / 2,
+        longitude: (minLon + maxLon) / 2
+    )
+
+    let span = MKCoordinateSpan(
+        latitudeDelta: max((maxLat - minLat) * 1.5, 0.005),
+        longitudeDelta: max((maxLon - minLon) * 1.5, 0.005)
+    )
+
+    return MKCoordinateRegion(center: center, span: span)
+}

@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		0F7090822E42E665007CADE0 /* SCOW_WNR_W3.gpx in Resources */ = {isa = PBXBuildFile; fileRef = 0F7090812E42E665007CADE0 /* SCOW_WNR_W3.gpx */; };
+		0F7090832E42E665007CADE0 /* SCOW_WNR_W3.gpx in Resources */ = {isa = PBXBuildFile; fileRef = 0F7090812E42E665007CADE0 /* SCOW_WNR_W3.gpx */; };
+		0F7090842E42E665007CADE0 /* SCOW_WNR_W3.gpx in Resources */ = {isa = PBXBuildFile; fileRef = 0F7090812E42E665007CADE0 /* SCOW_WNR_W3.gpx */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		0F40840B2E2D428300D47AF4 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +33,7 @@
 		0F4083FD2E2D428100D47AF4 /* SailRacer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SailRacer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F40840A2E2D428300D47AF4 /* SailRacerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SailRacerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F4084142E2D428300D47AF4 /* SailRacerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SailRacerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0F7090812E42E665007CADE0 /* SCOW_WNR_W3.gpx */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = SCOW_WNR_W3.gpx; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -75,6 +82,7 @@
 		0F4083F42E2D428100D47AF4 = {
 			isa = PBXGroup;
 			children = (
+				0F7090812E42E665007CADE0 /* SCOW_WNR_W3.gpx */,
 				0F4083FF2E2D428100D47AF4 /* SailRacer */,
 				0F40840D2E2D428300D47AF4 /* SailRacerTests */,
 				0F4084172E2D428300D47AF4 /* SailRacerUITests */,
@@ -212,6 +220,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0F7090822E42E665007CADE0 /* SCOW_WNR_W3.gpx in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -219,6 +228,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0F7090842E42E665007CADE0 /* SCOW_WNR_W3.gpx in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -226,6 +236,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0F7090832E42E665007CADE0 /* SCOW_WNR_W3.gpx in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
